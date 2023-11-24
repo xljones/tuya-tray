@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import pickle
-from functools import partial
 
 import tuyapy
 from PyQt6.QtCore import QCoreApplication
