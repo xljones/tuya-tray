@@ -3,7 +3,7 @@ import sys
 from functools import partial
 
 from PyQt6.QtCore import QCoreApplication
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QCursor
 from PyQt6.QtWidgets import QApplication, QColorDialog, QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
 
