@@ -1,3 +1,5 @@
+![example workflow](https://github.com/xljones/tuya-tray/actions/workflows/lint-and-test.yml/badge.svg)
+
 # Tuya Tray
 
 Tuya Tray is a taskbar application to control SmartLife/Tuya smart devices.
