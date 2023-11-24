@@ -1,6 +1,6 @@
 {
-    "username":"user@test.com",
+    "username": "user@test.com",
     "password": "my_password_123",
-    "country_code":"44",
-    "application":"smart_life"
+    "country_code": "44",
+    "application": "smart_life"
 }

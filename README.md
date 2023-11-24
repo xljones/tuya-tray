@@ -1,36 +1,47 @@
 # Tuya Tray
 
-Tuya Tray is an application utilising the Tuya API to automatically create a taskbar application to control SmartLife/Tuya lights.
+Tuya Tray is a taskbar application to control SmartLife/Tuya smart devices.
 
+## Installation
 
-### Installation
+### Configuration
 
-Tuya Tray requires [Python 3](https://www.python.org/downloads/) to run.
-
-Install the requirements and run the script.
+First, configure a `config.json` using the `tuya.sh` script, where
+* `EMAIL` is the email address used to login to Tuya or SmartLife
+* `PASSWORD` is the password used to login to Tuya or SmartLife
+* `COUNTRY_CODE` is the phone code for the region where you are (`44` for the UK `1` for USA)
+* `APPLICATION` is one of `tuya` or `smart_life`, depending on which service you use
 
 ```sh
-$ pip install -r requirements.txt
-$ python tuya-tray.py
+./tuya.sh -c EMAIL PASSWORD COUNTRY_CODE APPLICATION
 ```
 
-You will also need to alter the config.json file with the following:
- 1. Your Tuya/SmartLife login and password so it looks like this {"username":"example@domain.com","password":"YOURPASS"...}
- 2. Your country code ("44" for UK users, "1" for US/Canadian users, etc)
- 3. The application you're using ('tuya' for tuya users and 'smart_life' for smart life users)
+or you can manually configure a `config.json`, based on the provided `config.example.json`
 
+### Run the app
+
+Now you can install the application (on the first run) and run it with:
+
+```sh
+./tuya.sh
 ```
-{"username":"example@domain.com","password":"YOURPASS","country_code":"44","application":"tuya"}
+
+This will do the following:
+* install a local virtual environment `./venv`
+* Install dependencies
+* Login using your `config.json` data
+* Launch the menu bar application
+* Save your session data for quick logins
+
+or, you can manually install and run the application with
+
+```sh
+python -m pip install -r requirements.txt && python -m tuya
 ```
-### In Action!
-
-![Gif](https://i.imgur.com/YdeAgh4.gif)
-
-
-
-
 
 ### Todos
 
- - Implement colour wheel to lights
- - Light percentages (25,50,75)
+* Light brightness
+* Scene grouping
+* Better, less manual login system
+* Encode password in temporary files, or use Keychain

@@ -1,17 +1,18 @@
+import logging
 import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from tuya import config, tray
+from tuya.config import Config
+from tuya.tray import TuyaTray
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 if __name__ == "__main__":
-    c = config.Config()
-    c.load_from_file()
-
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    t = tray.TuyaTray()
+    t = TuyaTray()
     t.show()
 
     app.exec()

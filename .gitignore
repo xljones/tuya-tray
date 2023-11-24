@@ -6,3 +6,8 @@ __pycache__
 
 # macOS metadata
 .DS_Store
+
+# tuya-tray config
+config.json
+.tuya_session.dat
+.tuya.log
