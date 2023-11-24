@@ -1,5 +1,7 @@
 import json
 
+from tuya.const import CONFIG_FILEPATH
+
 
 class Config:
     def __init__(self):
@@ -8,7 +10,7 @@ class Config:
         self.country_code = None
         self.application = None
 
-    def load_from_file(self, filename="config.json"):
+    def load_from_file(self, filename=CONFIG_FILEPATH):
         with open(filename) as config:
             data = json.load(config)
             self.username = data["username"]

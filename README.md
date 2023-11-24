@@ -8,7 +8,7 @@ Tuya Tray is a taskbar application to control SmartLife/Tuya smart devices.
 
 ### Configuration
 
-First, configure a `config.json` using the `tuya.sh` script, where
+First, configure a `.config.json` using the `tuya.sh` script, where
 * `EMAIL` is the email address used to login to Tuya or SmartLife
 * `PASSWORD` is the password used to login to Tuya or SmartLife
 * `COUNTRY_CODE` is the phone code for the region where you are (`44` for the UK `1` for USA)
@@ -18,7 +18,7 @@ First, configure a `config.json` using the `tuya.sh` script, where
 ./tuya.sh -c EMAIL PASSWORD COUNTRY_CODE APPLICATION
 ```
 
-or you can manually configure a `config.json`, based on the provided `config.example.json`
+or you can manually configure a `.config.json`, based on the provided `config.example.json`
 
 ### Run the app
 
@@ -31,7 +31,7 @@ Now you can install the application (on the first run) and run it with:
 This will do the following:
 * install a local virtual environment `./venv`
 * Install dependencies
-* Login using your `config.json` data
+* Login using your `.config.json` data
 * Launch the menu bar application
 * Save your session data for quick logins
 
