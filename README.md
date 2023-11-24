@@ -39,6 +39,11 @@ or, you can manually install and run the application with
 python -m pip install -r requirements.txt && python -m tuya
 ```
 
+## Example
+
+![image](https://github.com/xljones/tuya-tray/assets/9535852/a0b2c8d9-6227-4060-b5c3-d567e99f3d4a)
+
+
 ### Todos
 
 * Light brightness
