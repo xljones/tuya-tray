@@ -5,9 +5,11 @@ function show_help()
     echo 
     echo "Syntax: ./tuya.sh [--help/-h|--config/-c]"
     echo "options:"
-    echo "--help|-h                    Print this Help."
-    echo "--config|-c EMAIL PASSWORD   Configure config.json"
-    echo "--active|-a                  Run Tuya Tray and keep connected in the shell"
+    echo "--help|-h     Print this Help."
+    echo "--config|-c EMAIL PASSWORD COUNTRY_CODE APPLICATION   
+                Configure config.json with your details
+                APPLICATION will be one of smart_life|tuya"
+    echo "--active|-a   Run Tuya Tray and keep connected in the shell"
     echo
     echo "Use no option to run Tuya Tray in the background"
     echo
