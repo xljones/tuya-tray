@@ -28,7 +28,7 @@ class TuyaTray(QSystemTrayIcon):
         super().__init__()
 
         self.tuya_api = TuyaApi()
-        self.devices = dict()
+        self.devices = None
 
         self.lights = dict()
         self.switches = dict()
