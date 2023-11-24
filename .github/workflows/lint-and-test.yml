@@ -21,7 +21,7 @@ jobs:
         python -m pip install -r requirements.txt
     - name: Analysing the code with black
       run: |
-        python -m black --check --line-length 120 .
+        python -m black --check .
     - name: Analysing imports with isort
       run : |
        python -m isort --check .
