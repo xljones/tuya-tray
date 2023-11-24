@@ -134,7 +134,7 @@ class TuyaTray(QSystemTrayIcon):
             decr_temp.triggered.connect(device.decr_temp)
 
             # disable controls if the device is offline
-            device_menu.setDisabled(not device.state())
+            # device_menu.setDisabled(not device.state())
 
         self.menu.addSeparator()
         exit_action = self.menu.addAction("Exit")
