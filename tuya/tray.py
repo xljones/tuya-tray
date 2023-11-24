@@ -7,12 +7,16 @@ from functools import partial
 import tuyapy
 from PyQt6.QtCore import QCoreApplication
 from PyQt6.QtGui import QCursor, QIcon
-from PyQt6.QtWidgets import QApplication, QColorDialog, QMenu, QSystemTrayIcon
+from PyQt6.QtWidgets import QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
-from tuyapy.devices.climate import TuyaClimate
-from tuyapy.devices.light import TuyaLight
-from tuyapy.devices.scene import TuyaScene
-from tuyapy.devices.switch import TuyaSwitch
+from tuyapy.devices import base
+
+from tuya.devices import (
+    TuyaClimateExtended,
+    TuyaLightExtended,
+    TuyaSceneExtended,
+    TuyaSwitchExtended,
+)
 
 PICKLED_SESSION_FILEPATH = ".tuya_session.dat"
 TEMPERATURE_UNIT = "°C"
@@ -24,49 +28,19 @@ class TuyaTray(QSystemTrayIcon):
     def __init__(self):
         super().__init__()
 
-        self.counter = None
+        self.tuya_api = TuyaApi()
+        self.devices = dict()
 
-        self.devices = None
-        self.device_ids = None
-        self.lights = None
-        self.switch = None
-        self.scenes = None
-
-        self.api = TuyaApi()
+        self.lights = dict()
+        self.switches = dict()
+        self.scenes = dict()
+        self.climates = dict()
 
         self.setIcon(QIcon("img/icon-rounded.png"))
         self.setToolTip("TuyaTray")
 
         self.menu = QMenu()
         self.init_ui()
-
-    @staticmethod
-    def activate_scene(scene: TuyaScene):
-        logger.info(f"activating scene {scene}")
-        scene.activate()
-
-    @staticmethod
-    def change_colour(device: TuyaLight):
-        colors = QColorDialog.getColor()
-        h, s, v, t = colors.getHsv()
-        s = int((s / 255 * 100))
-        if s < 60:
-            s = 60
-        return device.set_color([h, s, 100])
-
-    @staticmethod
-    def incr_temp(device: TuyaClimate):
-        current_temp = device.current_temperature()
-        new_temp = current_temp + 1
-        logger.info(f"increasing {device.name()} target temp from {current_temp} to {new_temp}")
-        device.set_temperature(new_temp)
-
-    @staticmethod
-    def decr_temp(device: TuyaClimate):
-        current_temp = device.current_temperature()
-        new_temp = current_temp - 1
-        logger.info(f"decreasing {device.name()} target temp from {current_temp} to {new_temp}")
-        device.set_temperature(new_temp)
 
     def init_ui(self):
         if os.path.exists(PICKLED_SESSION_FILEPATH):
@@ -78,7 +52,7 @@ class TuyaTray(QSystemTrayIcon):
             logger.info(f"initializing new tuya api session")
             with open("config.json") as config_file:
                 data = json.load(config_file)
-                self.api.init(
+                self.tuya_api.init(
                     username=data["username"],
                     password=data["password"],
                     countryCode=data["country_code"],
@@ -91,25 +65,36 @@ class TuyaTray(QSystemTrayIcon):
                 pickle.dump(tuyapy.tuyaapi.SESSION, pickle_file)
                 pickle_file.close()
 
-        self.devices = self.api.get_all_devices()
+        self.tuya_api.discover_devices()
+        self.devices = self.tuya_api.get_all_devices()
         for device in self.devices:
             logger.info(f"device: {device}")
 
-        self.switches = {d.name(): d for d in self.devices if d.obj_type == "switch"}
+        device: base.TuyaDevice
+        for device in self.devices:
+            device_extended = device
+            match device.object_type():
+                case "switch":
+                    device_extended.__class__ = TuyaSwitchExtended
+                    self.switches.update({device.name(): device_extended})
+                case "light":
+                    device_extended.__class__ = TuyaLightExtended
+                    self.lights.update({device.name(): device_extended})
+                case "scene":
+                    device_extended.__class__ = TuyaSceneExtended
+                    self.scenes.update({device.name(): device_extended})
+                case "climate":
+                    device_extended.__class__ = TuyaClimateExtended
+                    self.climates.update({device.name(): device_extended})
+
         logger.info(f"found {len(self.switches)} switches")
-
-        self.lights = {d.name(): d for d in self.devices if d.obj_type == "light"}
         logger.info(f"found {len(self.lights)} lights")
-
-        self.scenes = {d.name(): d for d in self.devices if d.obj_type == "scene"}
         logger.info(f"found {len(self.scenes)} scenes")
-
-        self.climates = {d.name(): d for d in self.devices if d.obj_type == "climate"}
         logger.info(f"found {len(self.climates)} climate controllers")
 
         for scene_name, scene in self.scenes.items():
             activate = self.menu.addAction(scene_name)
-            activate.triggered.connect(partial(self.activate_scene, scene))
+            activate.triggered.connect(scene.activate_scene)
         self.menu.addSeparator()
 
         lights_menu = self.menu.addMenu("Lights")
@@ -120,7 +105,7 @@ class TuyaTray(QSystemTrayIcon):
             device_off = device_menu.addAction("Off")
             device_off.triggered.connect(device.turn_off)
             change_color = device_menu.addAction("Light Color")
-            change_color.triggered.connect(partial(self.change_colour, device))
+            change_color.triggered.connect(device.change_colour)
 
         switches_menu = self.menu.addMenu("Switches")
         for device_name, device in self.switches.items():
@@ -145,9 +130,9 @@ class TuyaTray(QSystemTrayIcon):
             # current_temp.setDisabled(True)
 
             incr_temp = device_menu.addAction(f"+ 1{TEMPERATURE_UNIT}")
-            incr_temp.triggered.connect(partial(self.incr_temp, device))
+            incr_temp.triggered.connect(device.incr_temp)
             decr_temp = device_menu.addAction(f"- 1{TEMPERATURE_UNIT}")
-            decr_temp.triggered.connect(partial(self.decr_temp, device))
+            decr_temp.triggered.connect(device.decr_temp)
 
             # disable controls if the device is offline
             device_menu.setDisabled(not device.state())
