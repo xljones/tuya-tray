@@ -2,16 +2,21 @@ import json
 import logging
 import os
 import pickle
-import sys
 from functools import partial
 
 import tuyapy
+from tuyapy.devices.climate import TuyaClimate
+from tuyapy.devices.light import TuyaLight
+from tuyapy.devices.switch import TuyaSwitch
+from tuyapy.devices.scene import TuyaScene
+
 from PyQt6.QtCore import QCoreApplication
 from PyQt6.QtGui import QCursor, QIcon
 from PyQt6.QtWidgets import QApplication, QColorDialog, QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
 
 PICKLED_SESSION_FILEPATH = ".tuya_session.dat"
+TEMPERATURE_UNIT = "°C"
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +42,7 @@ class TuyaTray(QSystemTrayIcon):
         self.init_ui()
 
     @staticmethod
-    def turn_off(device):
+    def turn_off(device: TuyaSwitch | TuyaLight):
         logger.info(f"turning off device {device}")
         if not isinstance(device, list):
             return device.turn_off()
@@ -45,7 +50,7 @@ class TuyaTray(QSystemTrayIcon):
             return [i.turn_off() for i in device]
 
     @staticmethod
-    def turn_on(device):
+    def turn_on(device: TuyaSwitch | TuyaLight):
         logger.info(f"turning on device {device}")
         if not isinstance(device, list):
             return device.turn_on()
@@ -53,21 +58,32 @@ class TuyaTray(QSystemTrayIcon):
             return [i.turn_on() for i in device]
 
     @staticmethod
-    def activate_scene(scene):
+    def activate_scene(scene: TuyaScene):
         logger.info(f"activating scene {scene}")
         scene.activate()
 
     @staticmethod
-    def change_colour(device):
+    def change_colour(device: TuyaLight):
         colors = QColorDialog.getColor()
         h, s, v, t = colors.getHsv()
         s = int((s / 255 * 100))
         if s < 60:
             s = 60
-        if not isinstance(device, list):
-            return device.set_color([h, s, 100])
-        else:
-            return [i.set_color([h, s, 100]) for i in device]
+        return device.set_color([h, s, 100])
+
+    @staticmethod
+    def incr_temp(device: TuyaClimate):
+        current_temp = device.current_temperature()
+        new_temp = current_temp + 1
+        logger.info(f"increasing {device.name()} target temp from {current_temp} to {new_temp}")
+        device.set_temperature(new_temp)
+        
+    @staticmethod
+    def decr_temp(device: TuyaClimate):
+        current_temp = device.current_temperature()
+        new_temp = current_temp - 1
+        logger.info(f"decreasing {device.name()} target temp from {current_temp} to {new_temp}")
+        device.set_temperature(new_temp)
 
     def init_ui(self):
         if os.path.exists(PICKLED_SESSION_FILEPATH):
@@ -92,56 +108,67 @@ class TuyaTray(QSystemTrayIcon):
                 pickle.dump(tuyapy.tuyaapi.SESSION, pickle_file)
                 pickle_file.close()
 
-        self.device_ids = self.api.get_all_devices()
+        self.devices = self.api.get_all_devices()
+        for device in self.devices:
+            logger.info(f'device: {device}')
 
-        self.switch = dict(
-            sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "switch").items())
-        )
-        self.switch["All Switches"] = list(self.switch.values())
-        logger.info(f"found {len(self.switch)} switches")
+        self.switches = {d.name(): d for d in self.devices if d.obj_type == "switch"}
+        logger.info(f"found {len(self.switches)} switches")
 
-        self.lights = dict(
-            sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "light").items())
-        )
-        self.lights["All Lights"] = list(self.lights.values())
+        self.lights = {d.name(): d for d in self.devices if d.obj_type == "light"}
         logger.info(f"found {len(self.lights)} lights")
 
-        self.scenes = dict(
-            sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "scene").items())
-        )
+        self.scenes = {d.name(): d for d in self.devices if d.obj_type == "scene"}
         logger.info(f"found {len(self.scenes)} scenes")
+        
+        self.climates = {d.name(): d for d in self.devices if d.obj_type == "climate"}
+        logger.info(f"found {len(self.climates)} climate controllers")
+
         for scene_name, scene in self.scenes.items():
-            logger.info(f"scene_name ({type(scene_name)}): {scene_name}")
-            logger.info(f"scene ({type(scene)}): {scene}")
-
-        self.devices = {**self.switch, **self.lights}
-
-        self.menus = dict()
-        self.counter = 0
-
-        for j in self.devices.keys():
-            if isinstance(self.devices[j], list) is False and self.devices[j].obj_type == "light":
-                if self.counter == 0:
-                    self.menu.addSeparator()
-                    self.counter += 1
-            self.menus[f"{j}_Action"] = self.menu.addMenu(j)
-            if j in self.lights.keys():
-                on_menu = self.menus[f"{j}_Action"].addMenu("On")
-                on = on_menu.addAction("On")
-                colour_wheel = on_menu.addAction("Light Colour")
-                colour_wheel.triggered.connect(partial(self.change_colour, self.devices[j]))
-            else:
-                on = self.menus[f"{j}_Action"].addAction("On")
-
-            off = self.menus[f"{j}_Action"].addAction("Off")
-            on.triggered.connect(partial(self.turn_on, self.devices[j]))
-            off.triggered.connect(partial(self.turn_off, self.devices[j]))
-
-        self.menu.addSeparator()
-        for scene_name, scene in self.scenes.items():
-            # self.menus[f"{scene_name}_Action"] = self.menu.addMenu(scene_name)
             activate = self.menu.addAction(scene_name)
             activate.triggered.connect(partial(self.activate_scene, scene))
+        self.menu.addSeparator()
+
+        lights_menu = self.menu.addMenu("Lights")
+        for device_name, device in self.lights.items():
+            device_menu = lights_menu.addMenu(device_name)
+            device_on = device_menu.addAction("On")
+            device_on.triggered.connect(partial(self.turn_on, device))
+            device_off = device_menu.addAction("Off")
+            device_off.triggered.connect(partial(self.turn_off, device))
+            change_color = device_menu.addAction("Light Color")
+            change_color.triggered.connect(partial(self.change_colour, device))
+
+        switches_menu = self.menu.addMenu("Switches")
+        for device_name, device in self.switches.items():
+            device_menu = switches_menu.addMenu(device_name)
+            device_on = device_menu.addAction("On")
+            device_on.triggered.connect(partial(self.turn_on, device))
+            device_off = device_menu.addAction("Off")
+            device_off.triggered.connect(partial(self.turn_off, device))
+            
+        climate_menu = self.menu.addMenu("Climate Controllers")
+        for device_name, device in self.climates.items():
+            logger.info(f"{device_name} data: {device.data}")
+            device_menu = climate_menu.addMenu(device_name)
+            device_on = device_menu.addAction("On")
+            device_on.triggered.connect(partial(self.turn_on, device))
+            device_off = device_menu.addAction("Off")
+            device_off.triggered.connect(partial(self.turn_off, device))
+            
+            # show target and current temperatures of the climate controllers
+            # target_temp = device_menu.addAction(f"Target: {device.target_temperature()}{TEMPERATURE_UNIT}")
+            # target_temp.setDisabled(True)
+            # current_temp = device_menu.addAction(f"Current: {device.current_temperature()}{TEMPERATURE_UNIT}")
+            # current_temp.setDisabled(True)
+            
+            incr_temp = device_menu.addAction(f"+ 1{TEMPERATURE_UNIT}")
+            incr_temp.triggered.connect(partial(self.incr_temp, device))
+            decr_temp = device_menu.addAction(f"- 1{TEMPERATURE_UNIT}")
+            decr_temp.triggered.connect(partial(self.decr_temp, device))
+            
+            # disable controls if the device is offline
+            device_menu.setDisabled(not device.state())
 
         self.menu.addSeparator()
         exit_action = self.menu.addAction("Exit")
