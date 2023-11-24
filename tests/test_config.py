@@ -1,11 +1,11 @@
 import unittest, unittest.mock
 from parameterized import parameterized
 
-from tuya import config
+from tuya.config import Config
 
 class TestConfig(unittest.TestCase):
     def test_load(self):
-        c = config.Config()
+        c = Config()
         c.load_from_file('tests/fixtures/sample_config.json')
         assert c.username == "user@test.com"
         assert c.password == "my_password_123"
@@ -55,7 +55,7 @@ class TestConfig(unittest.TestCase):
         ],
     ])
     def test_verify(self, _, test_config, expected_issues):
-        c = config.Config()
+        c = Config()
         c.username = test_config['username']
         c.password = test_config['password']
         c.country_code = test_config['country_code']
