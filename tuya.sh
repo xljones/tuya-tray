@@ -13,7 +13,7 @@ function show_help()
 function setup_config() 
 {
     echo "configuring './config.json' with email=$1 password=$2"
-    echo "{\"username\": \"$1\", \"password\": \"$2\", \"country_code\": \"44\", \"application\": \"tuya\"}" > config.json
+    echo "{\"username\": \""$1"\", \"password\": \""$2"\", \"country_code\": \"44\", \"application\": \"tuya\"}" > config.json
 }
 
 function venv_activate() 
@@ -30,7 +30,7 @@ if [ "$1" = "--help" -o "$1" = "-h" ]; then
 elif [ "$1" = "--config" -o "$1" = "-c" ]; then
     setup_config $2 $3
 elif [ "$1" = "" ]; then
-    "starting tuya-tray.."
+    echo "starting tuya-tray.."
     venv_activate
     python -m tuya
 else
