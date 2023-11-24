@@ -41,22 +41,6 @@ class TuyaTray(QSystemTrayIcon):
         self.init_ui()
 
     @staticmethod
-    def turn_off(device: TuyaSwitch | TuyaLight):
-        logger.info(f"turning off device {device}")
-        if not isinstance(device, list):
-            return device.turn_off()
-        else:
-            return [i.turn_off() for i in device]
-
-    @staticmethod
-    def turn_on(device: TuyaSwitch | TuyaLight):
-        logger.info(f"turning on device {device}")
-        if not isinstance(device, list):
-            return device.turn_on()
-        else:
-            return [i.turn_on() for i in device]
-
-    @staticmethod
     def activate_scene(scene: TuyaScene):
         logger.info(f"activating scene {scene}")
         scene.activate()
@@ -132,9 +116,9 @@ class TuyaTray(QSystemTrayIcon):
         for device_name, device in self.lights.items():
             device_menu = lights_menu.addMenu(device_name)
             device_on = device_menu.addAction("On")
-            device_on.triggered.connect(partial(self.turn_on, device))
+            device_on.triggered.connect(device.turn_on)
             device_off = device_menu.addAction("Off")
-            device_off.triggered.connect(partial(self.turn_off, device))
+            device_off.triggered.connect(device.turn_off)
             change_color = device_menu.addAction("Light Color")
             change_color.triggered.connect(partial(self.change_colour, device))
 
@@ -142,18 +126,17 @@ class TuyaTray(QSystemTrayIcon):
         for device_name, device in self.switches.items():
             device_menu = switches_menu.addMenu(device_name)
             device_on = device_menu.addAction("On")
-            device_on.triggered.connect(partial(self.turn_on, device))
+            device_on.triggered.connect(device.turn_on)
             device_off = device_menu.addAction("Off")
-            device_off.triggered.connect(partial(self.turn_off, device))
+            device_off.triggered.connect(device.turn_off)
 
         climate_menu = self.menu.addMenu("Climate Controllers")
         for device_name, device in self.climates.items():
-            logger.info(f"{device_name} data: {device.data}")
             device_menu = climate_menu.addMenu(device_name)
             device_on = device_menu.addAction("On")
-            device_on.triggered.connect(partial(self.turn_on, device))
+            device_on.triggered.connect(device.turn_on)
             device_off = device_menu.addAction("Off")
-            device_off.triggered.connect(partial(self.turn_off, device))
+            device_off.triggered.connect(device.turn_off)
 
             # show target and current temperatures of the climate controllers
             # target_temp = device_menu.addAction(f"Target: {device.target_temperature()}{TEMPERATURE_UNIT}")
