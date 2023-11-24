@@ -27,7 +27,7 @@ class TuyaTray(QSystemTrayIcon):
         self.lights = None
         self.switch = None
         self.scenes = None
-        
+
         self.api = TuyaApi()
 
         self.setIcon(QIcon("img/icon-rounded.png"))
@@ -51,7 +51,7 @@ class TuyaTray(QSystemTrayIcon):
             return device.turn_on()
         else:
             return [i.turn_on() for i in device]
-        
+
     @staticmethod
     def activate_scene(scene):
         logger.info(f"activating scene {scene}")
@@ -72,7 +72,7 @@ class TuyaTray(QSystemTrayIcon):
     def init_ui(self):
         if os.path.exists(PICKLED_SESSION_FILEPATH):
             logger.info(f"loading previous tuya session in {PICKLED_SESSION_FILEPATH}")
-            with open(PICKLED_SESSION_FILEPATH, 'rb') as pickle_file:
+            with open(PICKLED_SESSION_FILEPATH, "rb") as pickle_file:
                 tuyapy.tuyaapi.SESSION = pickle.load(pickle_file)
                 pickle_file.close()
         else:
@@ -86,30 +86,36 @@ class TuyaTray(QSystemTrayIcon):
                     bizType=data["application"],
                 )
                 config_file.close()
-                
+
             logger.info(f"saving tuya api session to disk {PICKLED_SESSION_FILEPATH}")
-            with open(PICKLED_SESSION_FILEPATH, 'wb') as pickle_file:
+            with open(PICKLED_SESSION_FILEPATH, "wb") as pickle_file:
                 pickle.dump(tuyapy.tuyaapi.SESSION, pickle_file)
                 pickle_file.close()
 
         self.device_ids = self.api.get_all_devices()
 
-        self.switch = dict(sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "switch").items()))
+        self.switch = dict(
+            sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "switch").items())
+        )
         self.switch["All Switches"] = list(self.switch.values())
         logger.info(f"found {len(self.switch)} switches")
-        
-        self.lights = dict(sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "light").items()))
+
+        self.lights = dict(
+            sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "light").items())
+        )
         self.lights["All Lights"] = list(self.lights.values())
         logger.info(f"found {len(self.lights)} lights")
-        
-        self.scenes = dict(sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "scene").items()))
+
+        self.scenes = dict(
+            sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "scene").items())
+        )
         logger.info(f"found {len(self.scenes)} scenes")
         for scene_name, scene in self.scenes.items():
             logger.info(f"scene_name ({type(scene_name)}): {scene_name}")
             logger.info(f"scene ({type(scene)}): {scene}")
-        
+
         self.devices = {**self.switch, **self.lights}
-        
+
         self.menus = dict()
         self.counter = 0
 
@@ -130,18 +136,18 @@ class TuyaTray(QSystemTrayIcon):
             off = self.menus[f"{j}_Action"].addAction("Off")
             on.triggered.connect(partial(self.turn_on, self.devices[j]))
             off.triggered.connect(partial(self.turn_off, self.devices[j]))
-        
+
         self.menu.addSeparator()
         for scene_name, scene in self.scenes.items():
             # self.menus[f"{scene_name}_Action"] = self.menu.addMenu(scene_name)
             activate = self.menu.addAction(scene_name)
             activate.triggered.connect(partial(self.activate_scene, scene))
-        
+
         self.menu.addSeparator()
         exit_action = self.menu.addAction("Exit")
         exit_action.triggered.connect(QCoreApplication.quit)
         self.setContextMenu(self.menu)
-        
+
         logger.info("showing ui")
         self.show()
 
