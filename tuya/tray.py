@@ -5,15 +5,14 @@ import pickle
 from functools import partial
 
 import tuyapy
-from tuyapy.devices.climate import TuyaClimate
-from tuyapy.devices.light import TuyaLight
-from tuyapy.devices.switch import TuyaSwitch
-from tuyapy.devices.scene import TuyaScene
-
 from PyQt6.QtCore import QCoreApplication
 from PyQt6.QtGui import QCursor, QIcon
 from PyQt6.QtWidgets import QApplication, QColorDialog, QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
+from tuyapy.devices.climate import TuyaClimate
+from tuyapy.devices.light import TuyaLight
+from tuyapy.devices.scene import TuyaScene
+from tuyapy.devices.switch import TuyaSwitch
 
 PICKLED_SESSION_FILEPATH = ".tuya_session.dat"
 TEMPERATURE_UNIT = "°C"
@@ -77,7 +76,7 @@ class TuyaTray(QSystemTrayIcon):
         new_temp = current_temp + 1
         logger.info(f"increasing {device.name()} target temp from {current_temp} to {new_temp}")
         device.set_temperature(new_temp)
-        
+
     @staticmethod
     def decr_temp(device: TuyaClimate):
         current_temp = device.current_temperature()
@@ -110,7 +109,7 @@ class TuyaTray(QSystemTrayIcon):
 
         self.devices = self.api.get_all_devices()
         for device in self.devices:
-            logger.info(f'device: {device}')
+            logger.info(f"device: {device}")
 
         self.switches = {d.name(): d for d in self.devices if d.obj_type == "switch"}
         logger.info(f"found {len(self.switches)} switches")
@@ -120,7 +119,7 @@ class TuyaTray(QSystemTrayIcon):
 
         self.scenes = {d.name(): d for d in self.devices if d.obj_type == "scene"}
         logger.info(f"found {len(self.scenes)} scenes")
-        
+
         self.climates = {d.name(): d for d in self.devices if d.obj_type == "climate"}
         logger.info(f"found {len(self.climates)} climate controllers")
 
@@ -146,7 +145,7 @@ class TuyaTray(QSystemTrayIcon):
             device_on.triggered.connect(partial(self.turn_on, device))
             device_off = device_menu.addAction("Off")
             device_off.triggered.connect(partial(self.turn_off, device))
-            
+
         climate_menu = self.menu.addMenu("Climate Controllers")
         for device_name, device in self.climates.items():
             logger.info(f"{device_name} data: {device.data}")
@@ -155,18 +154,18 @@ class TuyaTray(QSystemTrayIcon):
             device_on.triggered.connect(partial(self.turn_on, device))
             device_off = device_menu.addAction("Off")
             device_off.triggered.connect(partial(self.turn_off, device))
-            
+
             # show target and current temperatures of the climate controllers
             # target_temp = device_menu.addAction(f"Target: {device.target_temperature()}{TEMPERATURE_UNIT}")
             # target_temp.setDisabled(True)
             # current_temp = device_menu.addAction(f"Current: {device.current_temperature()}{TEMPERATURE_UNIT}")
             # current_temp.setDisabled(True)
-            
+
             incr_temp = device_menu.addAction(f"+ 1{TEMPERATURE_UNIT}")
             incr_temp.triggered.connect(partial(self.incr_temp, device))
             decr_temp = device_menu.addAction(f"- 1{TEMPERATURE_UNIT}")
             decr_temp.triggered.connect(partial(self.decr_temp, device))
-            
+
             # disable controls if the device is offline
             device_menu.setDisabled(not device.state())
 
