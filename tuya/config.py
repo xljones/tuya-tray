@@ -1,6 +1,7 @@
 import json
 
-class Config():
+
+class Config:
     def __init__(self):
         self.username = None
         self.password = None
@@ -10,10 +11,10 @@ class Config():
     def load_from_file(self, filename="config.json"):
         with open(filename) as config:
             data = json.load(config)
-            self.username = data['username']
-            self.password = data['password']
-            self.country_code = data['country_code']
-            self.application = data['application']
+            self.username = data["username"]
+            self.password = data["password"]
+            self.country_code = data["country_code"]
+            self.application = data["application"]
         self.verify()
 
     def verify(self):
@@ -27,6 +28,8 @@ class Config():
         if not self.country_code:
             issues.append("missing country code")
         if self.application not in application_allowed:
-            issues.append(f"application type '{self.application}' is not valid. must be one of {', '.join(application_allowed)}")
+            issues.append(
+                f"application type '{self.application}' is not valid. must be one of {', '.join(application_allowed)}"
+            )
 
         return issues
