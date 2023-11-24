@@ -7,13 +7,20 @@ function show_help()
     echo "options:"
     echo "--help|-h                    Print this Help."
     echo "--config|-c EMAIL PASSWORD   Configure config.json"
+    echo "--active|-a                  Run Tuya Tray and keep connected in the shell"
+    echo
+    echo "Use no option to run Tuya Tray in the background"
     echo
 }
 
 function setup_config() 
 {
-    echo "configuring './config.json' with email=$1 password=$2"
-    echo "{\"username\": \""$1"\", \"password\": \""$2"\", \"country_code\": \"44\", \"application\": \"tuya\"}" > config.json
+    if [ "$4" != "tuya" -o "$4" != "smart_life" ]; then
+        echo "application needs to be one of [tuya|smart_life]"
+    else
+        echo "configuring './config.json' with email=$1 password=$2 country_code=$3 application=$4"
+        echo "{\"username\": \""$1"\", \"password\": \""$2"\", \"country_code\": \"$3\", \"application\": \"$4\"}" > config.json
+    fi
 }
 
 function venv_activate() 
@@ -29,10 +36,14 @@ if [ "$1" = "--help" -o "$1" = "-h" ]; then
     show_help
 elif [ "$1" = "--config" -o "$1" = "-c" ]; then
     setup_config $2 $3
-elif [ "$1" = "" ]; then
-    echo "starting tuya-tray.."
+elif [ "$1" = "--active" -o "$1" = "-a" ]; then
+    echo "starting tuya-tray without disconnecting from process.."
     venv_activate
     python -m tuya
+elif [ "$1" = "" ]; then
+    echo "starting tuya-tray with no hangup (nohup)..."
+    venv_activate
+    nohup python -m tuya > .tuya.log &
 else
     echo "Invalid option"
 fi
