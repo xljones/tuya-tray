@@ -1,13 +1,19 @@
 import json
 import sys
+import os
+import pickle
+import logging
 from functools import partial
 
 from PyQt6.QtCore import QCoreApplication
 from PyQt6.QtGui import QIcon, QCursor
 from PyQt6.QtWidgets import QApplication, QColorDialog, QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
+import tuyapy
 
-api = TuyaApi()
+PICKLED_SESSION_FILEPATH = ".tuya_session.dat"
+
+logger = logging.getLogger(__name__)
 
 
 class TuyaTray(QSystemTrayIcon):
@@ -22,6 +28,8 @@ class TuyaTray(QSystemTrayIcon):
         self.lights = None
         self.switch = None
         self.scenes = None
+        
+        self.api = TuyaApi()
 
         self.setIcon(QIcon("img/icon-rounded.png"))
         self.setToolTip("TuyaTray")
@@ -58,23 +66,37 @@ class TuyaTray(QSystemTrayIcon):
     def init_ui(self):
         with open("config.json") as config:
             data = json.load(config)
+        
+        if os.path.exists(PICKLED_SESSION_FILEPATH):
+            logger.info(f"loading previous tuya session in {PICKLED_SESSION_FILEPATH}")
+            with open(PICKLED_SESSION_FILEPATH, 'rb') as pickle_file:
+                tuyapy.tuyaapi.SESSION = pickle.load(pickle_file)
+                pickle_file.close()
+        else:
+            logger.info(f"initializing new tuya api session")
+            self.api.init(
+                data["username"],
+                data["password"],
+                data["country_code"],
+                data["application"],
+            )
+            logger.info(f"saving tuya api session to disk {PICKLED_SESSION_FILEPATH}")
+            with open(PICKLED_SESSION_FILEPATH, 'wb') as pickle_file:
+                pickle.dump(tuyapy.tuyaapi.SESSION, pickle_file)
+                pickle_file.close()
 
-        print(data)
-        api.init(
-            data["username"],
-            data["password"],
-            data["country_code"],
-            data["application"],
-        )
-
-        self.device_ids = api.get_all_devices()
-        print(self.device_ids)
+        self.device_ids = self.api.get_all_devices()
 
         self.switch = dict(sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "switch").items()))
         self.switch["All Switches"] = list(self.switch.values())
+        
         self.lights = dict(sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "light").items()))
         self.lights["All Lights"] = list(self.lights.values())
+        
+        self.scenes = dict(sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "scene").items()))
+        
         self.devices = {**self.switch, **self.lights}
+        
         self.menus = dict()
         self.counter = 0
 
@@ -99,7 +121,7 @@ class TuyaTray(QSystemTrayIcon):
         exit_action = self.menu.addAction("Exit")
         exit_action.triggered.connect(QCoreApplication.quit)
         self.setContextMenu(self.menu)
-        print("showing ui")
+        logger.info("showing ui")
         self.show()
 
 

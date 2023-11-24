@@ -9,3 +9,4 @@ __pycache__
 
 # tuya-tray config
 config.json
+.tuya_session.dat
