@@ -1,5 +1,5 @@
-import sys
 import logging
+import sys
 
 from PyQt6.QtWidgets import QApplication
 

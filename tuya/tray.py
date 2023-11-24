@@ -1,15 +1,15 @@
 import json
-import sys
+import logging
 import os
 import pickle
-import logging
+import sys
 from functools import partial
 
+import tuyapy
 from PyQt6.QtCore import QCoreApplication
-from PyQt6.QtGui import QIcon, QCursor
+from PyQt6.QtGui import QCursor, QIcon
 from PyQt6.QtWidgets import QApplication, QColorDialog, QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
-import tuyapy
 
 PICKLED_SESSION_FILEPATH = ".tuya_session.dat"
 
