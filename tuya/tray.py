@@ -23,7 +23,7 @@ class TuyaTray(QSystemTrayIcon):
         self.switch = None
         self.scenes = None
 
-        self.setIcon(QIcon("icon-rounded.png"))
+        self.setIcon(QIcon("img/icon-rounded.png"))
         self.setToolTip("TuyaTray")
 
         self.menu = QMenu()
