@@ -1,6 +1,7 @@
 # IDE & Python
 .idea
 venv
+.pytest_cache
 __pycache__
 
 # macOS metadata

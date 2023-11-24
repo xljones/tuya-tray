@@ -70,31 +70,16 @@ class TuyaTray(QSystemTrayIcon):
         self.device_ids = api.get_all_devices()
         print(self.device_ids)
 
-        self.switch = dict(
-            sorted(
-                dict(
-                    (i.name(), i) for i in self.device_ids if i.obj_type == "switch"
-                ).items()
-            )
-        )
+        self.switch = dict(sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "switch").items()))
         self.switch["All Switches"] = list(self.switch.values())
-        self.lights = dict(
-            sorted(
-                dict(
-                    (i.name(), i) for i in self.device_ids if i.obj_type == "light"
-                ).items()
-            )
-        )
+        self.lights = dict(sorted(dict((i.name(), i) for i in self.device_ids if i.obj_type == "light").items()))
         self.lights["All Lights"] = list(self.lights.values())
         self.devices = {**self.switch, **self.lights}
         self.menus = dict()
         self.counter = 0
 
         for j in self.devices.keys():
-            if (
-                isinstance(self.devices[j], list) is False
-                and self.devices[j].obj_type == "light"
-            ):
+            if isinstance(self.devices[j], list) is False and self.devices[j].obj_type == "light":
                 if self.counter == 0:
                     self.menu.addSeparator()
                     self.counter += 1
@@ -103,9 +88,7 @@ class TuyaTray(QSystemTrayIcon):
                 on_menu = self.menus[f"{j}_Action"].addMenu("On")
                 on = on_menu.addAction("On")
                 colour_wheel = on_menu.addAction("Light Colour")
-                colour_wheel.triggered.connect(
-                    partial(self.change_colour, self.devices[j])
-                )
+                colour_wheel.triggered.connect(partial(self.change_colour, self.devices[j]))
             else:
                 on = self.menus[f"{j}_Action"].addAction("On")
 

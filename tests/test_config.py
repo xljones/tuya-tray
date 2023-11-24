@@ -1,12 +1,9 @@
-import unittest
-import unittest.mock
-
 from parameterized import parameterized
 
 from tuya.config import Config
 
 
-class TestConfig(unittest.TestCase):
+class TestConfig:
     def test_load(self):
         c = Config()
         c.load_from_file("tests/fixtures/sample_config.json")
@@ -55,9 +52,7 @@ class TestConfig(unittest.TestCase):
                     "country_code": "00",
                     "application": "toyota",
                 },
-                [
-                    "application type 'toyota' is not valid. must be one of smart_life, tuya"
-                ],
+                ["application type 'toyota' is not valid. must be one of smart_life, tuya"],
             ],
         ]
     )

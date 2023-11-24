@@ -21,11 +21,11 @@ jobs:
         python -m pip install -r requirements.txt
     - name: Analysing the code with black
       run: |
-        black --line-length 120 .
+        python -m black --line-length 120 .
     - name: Sort imports with isort
       run : |
-       isort .
+       python -m isort .
     - name: Running test suite
       run: |
-        pytest .
+        python -m pytest .
       if: always()
