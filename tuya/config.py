@@ -14,9 +14,9 @@ class Config:
         self.country_code: str | None = None
         self.application: str | None = None
 
-        if config_filename:
+        if config_filename is not None:
             self._load_from_file(config_filename=config_filename)
-        self._verify()
+            self._verify()
 
     def _load_from_file(self, config_filename: str) -> None:
         with open(config_filename) as config_file:
