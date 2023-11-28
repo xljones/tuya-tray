@@ -68,7 +68,7 @@ class TestConfig:
         ]
     )
     def test_verify(self, test_name: str, test_config: dict, expected_exception_str: str):
-        c = Config()
+        c = Config(config_filename=None)
         c.username = test_config["username"]
         c.password = test_config["password"]
         c.country_code = test_config["country_code"]
