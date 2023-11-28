@@ -17,6 +17,7 @@ from tuya.devices import (
     TuyaSceneExtended,
     TuyaSwitchExtended,
 )
+from tuya.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -47,15 +48,14 @@ class TuyaTray(QSystemTrayIcon):
                 pickle_file.close()
         else:
             logger.info(f"initializing new tuya api session")
-            with open("config.json") as config_file:
-                data = json.load(config_file)
-                self.tuya_api.init(
-                    username=data["username"],
-                    password=data["password"],
-                    countryCode=data["country_code"],
-                    bizType=data["application"],
-                )
-                config_file.close()
+            config = Config()
+
+            self.tuya_api.init(
+                username=config.username,
+                password=config.password,
+                countryCode=config.country_code,
+                bizType=config.application,
+            )
 
             logger.info(f"saving tuya api session to disk {PICKLED_SESSION_FILEPATH}")
             with open(PICKLED_SESSION_FILEPATH, "wb") as pickle_file:
