@@ -1,12 +1,13 @@
 from parameterized import parameterized
 
-from tuya.config import Config
+from tuya.config import Config, BadConfigException
 
+import pytest
 
 class TestConfig:
-    def test_load(self):
-        c = Config()
-        c.load_from_file("tests/fixtures/sample_config.json")
+    def test__load_config_from_file(self):
+        c = Config(config_filename="tests/fixtures/sample_config.json")
+        
         assert c.username == "user@test.com"
         assert c.password == "my_password_123"
         assert c.country_code == "44"
@@ -15,6 +16,16 @@ class TestConfig:
     @parameterized.expand(
         [
             [
+                "valid config",
+                {
+                    "username": "abc@me.com",
+                    "password": "defabc",
+                    "country_code": "44",
+                    "application": "smart_life",
+                },
+                None,
+            ],
+            [
                 "bad username",
                 {
                     "username": "",
@@ -22,7 +33,7 @@ class TestConfig:
                     "country_code": "00",
                     "application": "smart_life",
                 },
-                ["missing username"],
+                "missing username",
             ],
             [
                 "bad password",
@@ -32,7 +43,7 @@ class TestConfig:
                     "country_code": "00",
                     "application": "smart_life",
                 },
-                ["missing password"],
+                "missing password",
             ],
             [
                 "bad country code",
@@ -42,7 +53,7 @@ class TestConfig:
                     "country_code": "",
                     "application": "smart_life",
                 },
-                ["missing country code"],
+                "missing country code",
             ],
             [
                 "bad application",
@@ -52,15 +63,19 @@ class TestConfig:
                     "country_code": "00",
                     "application": "toyota",
                 },
-                ["application type 'toyota' is not valid. must be one of smart_life, tuya"],
+                "application type 'toyota' is not valid. must be one of smart_life, tuya",
             ],
         ]
     )
-    def test_verify(self, _, test_config, expected_issues):
+    def test_verify(self, test_name: str, test_config: dict, expected_exception_str: str):
         c = Config()
         c.username = test_config["username"]
         c.password = test_config["password"]
         c.country_code = test_config["country_code"]
         c.application = test_config["application"]
-        v = c.verify()
-        assert v == expected_issues, f"expected '{v}' == '{expected_issues}'"
+
+        if expected_exception_str:
+            with pytest.raises(expected_exception=BadConfigException, match=expected_exception_str):
+                c._verify()
+        else:
+            c._verify()
