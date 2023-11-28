@@ -8,6 +8,6 @@ __pycache__
 .DS_Store
 
 # tuya-tray config
-config.json
+.config.json
 .tuya_session.dat
 .tuya.log

@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import pickle
@@ -10,15 +9,14 @@ from PyQt6.QtWidgets import QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
 from tuyapy.devices import base
 
+from tuya.config import Config
+from tuya.const import PICKLED_SESSION_FILEPATH, TEMPERATURE_UNIT
 from tuya.devices import (
     TuyaClimateExtended,
     TuyaLightExtended,
     TuyaSceneExtended,
     TuyaSwitchExtended,
 )
-
-PICKLED_SESSION_FILEPATH = ".tuya_session.dat"
-TEMPERATURE_UNIT = "°C"
 
 logger = logging.getLogger(__name__)
 
@@ -49,15 +47,14 @@ class TuyaTray(QSystemTrayIcon):
                 pickle_file.close()
         else:
             logger.info(f"initializing new tuya api session")
-            with open("config.json") as config_file:
-                data = json.load(config_file)
-                self.tuya_api.init(
-                    username=data["username"],
-                    password=data["password"],
-                    countryCode=data["country_code"],
-                    bizType=data["application"],
-                )
-                config_file.close()
+            config = Config()
+
+            self.tuya_api.init(
+                username=config.username,
+                password=config.password,
+                countryCode=config.country_code,
+                bizType=config.application,
+            )
 
             logger.info(f"saving tuya api session to disk {PICKLED_SESSION_FILEPATH}")
             with open(PICKLED_SESSION_FILEPATH, "wb") as pickle_file:

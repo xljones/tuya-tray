@@ -1,1 +1,6 @@
-{"username": "email@me.com", "password": "password", "country_code": "44", "application": "tuya"}
+{
+    "username": "email@me.com",
+    "password": "password",
+    "country_code": "44",
+    "application": "tuya"
+}
