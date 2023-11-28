@@ -31,24 +31,27 @@ class TuyaTray(QSystemTrayIcon):
         self.lights = dict()
         self.switches = dict()
         self.scenes = dict()
+        self.scene_groups = {"other": {}}
         self.climates = dict()
 
         self.setIcon(QIcon("img/icon-rounded.png"))
         self.setToolTip("TuyaTray")
 
         self.menu = QMenu()
-        self.init_ui()
 
-    def init_ui(self):
-        if os.path.exists(PICKLED_SESSION_FILEPATH):
+        self._load_session()
+        self._init_ui()
+
+    def _load_session(self, force_refresh: bool = False):
+        config = Config()
+
+        if os.path.exists(PICKLED_SESSION_FILEPATH) and not force_refresh:
             logger.info(f"loading previous tuya session in {PICKLED_SESSION_FILEPATH}")
             with open(PICKLED_SESSION_FILEPATH, "rb") as pickle_file:
                 tuyapy.tuyaapi.SESSION = pickle.load(pickle_file)
                 pickle_file.close()
         else:
             logger.info(f"initializing new tuya api session")
-            config = Config()
-
             self.tuya_api.init(
                 username=config.username,
                 password=config.password,
@@ -56,10 +59,13 @@ class TuyaTray(QSystemTrayIcon):
                 bizType=config.application,
             )
 
-            logger.info(f"saving tuya api session to disk {PICKLED_SESSION_FILEPATH}")
+            logger.info(f"saving new tuya api session to disk {PICKLED_SESSION_FILEPATH}")
             with open(PICKLED_SESSION_FILEPATH, "wb") as pickle_file:
                 pickle.dump(tuyapy.tuyaapi.SESSION, pickle_file)
                 pickle_file.close()
+
+        for scene_group_name in config.scene_groups:
+            self.scene_groups.update({scene_group_name.lower(): {}})
 
         self.tuya_api.discover_devices()
         self.devices = self.tuya_api.get_all_devices()
@@ -79,6 +85,13 @@ class TuyaTray(QSystemTrayIcon):
                 case "scene":
                     device_extended.__class__ = TuyaSceneExtended
                     self.scenes.update({device.name(): device_extended})
+                    found_scene = False
+                    for scene_name in self.scene_groups.keys():
+                        if scene_name in device.name().lower():
+                            found_scene = True
+                            self.scene_groups[scene_name].update({device.name(): device_extended})
+                    if found_scene is False:
+                        self.scene_groups["other"].update({device.name(): device_extended})
                 case "climate":
                     device_extended.__class__ = TuyaClimateExtended
                     self.climates.update({device.name(): device_extended})
@@ -86,12 +99,15 @@ class TuyaTray(QSystemTrayIcon):
         logger.info(f"found {len(self.switches)} switches")
         logger.info(f"found {len(self.lights)} lights")
         logger.info(f"found {len(self.scenes)} scenes")
+        logger.info(f"found {len(self.scene_groups)} scene_groups")
         logger.info(f"found {len(self.climates)} climate controllers")
 
-        for scene_name, scene in self.scenes.items():
-            activate = self.menu.addAction(scene_name)
-            activate.triggered.connect(scene.activate_scene)
-        self.menu.addSeparator()
+    def _init_ui(self):
+        for _, scene_group_devices in self.scene_groups.items():
+            for scene_name, scene in scene_group_devices.items():
+                activate = self.menu.addAction(scene_name)
+                activate.triggered.connect(scene.activate_scene)
+            self.menu.addSeparator()
 
         lights_menu = self.menu.addMenu("Lights")
         for device_name, device in self.lights.items():
