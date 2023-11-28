@@ -1,13 +1,13 @@
+import pytest
 from parameterized import parameterized
 
-from tuya.config import Config, BadConfigException
+from tuya.config import BadConfigException, Config
 
-import pytest
 
 class TestConfig:
     def test__load_config_from_file(self):
         c = Config(config_filename="tests/fixtures/sample_config.json")
-        
+
         assert c.username == "user@test.com"
         assert c.password == "my_password_123"
         assert c.country_code == "44"

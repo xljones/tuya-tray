@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
 from tuyapy.devices import base
 
+from tuya.config import Config
 from tuya.const import PICKLED_SESSION_FILEPATH, TEMPERATURE_UNIT
 from tuya.devices import (
     TuyaClimateExtended,
@@ -17,7 +18,6 @@ from tuya.devices import (
     TuyaSceneExtended,
     TuyaSwitchExtended,
 )
-from tuya.config import Config
 
 logger = logging.getLogger(__name__)
 
