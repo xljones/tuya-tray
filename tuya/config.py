@@ -14,7 +14,7 @@ class Config:
         self.password: str | None = None
         self.country_code: str | None = None
         self.application: str | None = None
-        self.scene_group_names: List[str] | None = None
+        self.scene_group_names: List[str] = []
 
         if config_filename is not None:
             self._load_from_file(config_filename=config_filename)
@@ -27,7 +27,7 @@ class Config:
             self.password = config_data.get("password")
             self.country_code = config_data.get("country_code")
             self.application = config_data.get("application")
-            self.scene_group_names = config_data.get("scene_group_names")
+            self.scene_group_names = config_data.get("scene_group_names", [])
             config_file.close()
 
     def _verify(self) -> None:

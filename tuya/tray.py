@@ -1,6 +1,7 @@
 import logging
 import os
 import pickle
+from typing import Any, Dict, List
 
 import tuyapy
 from PyQt6.QtCore import QCoreApplication
@@ -18,8 +19,6 @@ from tuya.devices import (
     TuyaSwitchExtended,
 )
 
-from typing import List, Dict, Any
-
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +27,7 @@ class TuyaTray(QSystemTrayIcon):
         super().__init__()
 
         self.tuya_api: TuyaApi = TuyaApi()
-        self.devices: List[Any] | None = None
+        self.devices: List[Any] = []
 
         self.lights: Dict = dict()
         self.switches: Dict = dict()
@@ -66,13 +65,11 @@ class TuyaTray(QSystemTrayIcon):
                 pickle.dump(tuyapy.tuyaapi.SESSION, pickle_file)
                 pickle_file.close()
 
-        for scene_group_name in config.scene_groups:
+        for scene_group_name in config.scene_group_names:
             self.scene_groups.update({scene_group_name.lower(): {}})
 
         self.tuya_api.discover_devices()
         self.devices = self.tuya_api.get_all_devices()
-        for device in self.devices:
-            logger.info(f"device: {device}")
 
         device: base.TuyaDevice
         for device in self.devices:
@@ -138,10 +135,14 @@ class TuyaTray(QSystemTrayIcon):
             device_off.triggered.connect(device.turn_off)
 
             # show target and current temperatures of the climate controllers
-            # target_temp = device_menu.addAction(f"Target: {device.target_temperature()}{TEMPERATURE_UNIT}")
-            # target_temp.setDisabled(True)
-            # current_temp = device_menu.addAction(f"Current: {device.current_temperature()}{TEMPERATURE_UNIT}")
-            # current_temp.setDisabled(True)
+            target_temp = device_menu.addAction(
+                f"Target: {device.target_temperature()}{TEMPERATURE_UNIT}"
+            )
+            target_temp.setDisabled(True)
+            current_temp = device_menu.addAction(
+                f"Current: {device.current_temperature()}{TEMPERATURE_UNIT}"
+            )
+            current_temp.setDisabled(True)
 
             incr_temp = device_menu.addAction(f"+ 1{TEMPERATURE_UNIT}")
             incr_temp.triggered.connect(device.incr_temp)

@@ -4,6 +4,9 @@ line-length = 100
 [tool.isort]
 profile = "black"
 
+[tool.mypy]
+check_untyped_defs = false
+
 [[tool.mypy.overrides]]
 module = "tuyapy.*"
 ignore_missing_imports = true
