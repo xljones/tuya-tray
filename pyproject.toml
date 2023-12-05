@@ -3,3 +3,11 @@ line-length = 100
 
 [tool.isort]
 profile = "black"
+
+[[tool.mypy.overrides]]
+module = "tuyapy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "parameterized.*"
+ignore_missing_imports = true

@@ -18,6 +18,8 @@ from tuya.devices import (
     TuyaSwitchExtended,
 )
 
+from typing import List, Dict, Any
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,14 +27,14 @@ class TuyaTray(QSystemTrayIcon):
     def __init__(self):
         super().__init__()
 
-        self.tuya_api = TuyaApi()
-        self.devices = None
+        self.tuya_api: TuyaApi = TuyaApi()
+        self.devices: List[Any] | None = None
 
-        self.lights = dict()
-        self.switches = dict()
-        self.scenes = dict()
-        self.scene_groups = {"other": {}}
-        self.climates = dict()
+        self.lights: Dict = dict()
+        self.switches: Dict = dict()
+        self.scenes: Dict = dict()
+        self.scene_groups: Dict = {"other": {}}
+        self.climates: Dict = dict()
 
         self.setIcon(QIcon("img/icon-rounded.png"))
         self.setToolTip("TuyaTray")

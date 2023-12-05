@@ -24,7 +24,10 @@ jobs:
         python -m black --check .
     - name: Analysing imports with isort
       run : |
-       python -m isort --check .
+        python -m isort --check .
+    # - name: Analaysing codebase with mypy
+    #   run : |
+    #     python -m mypy --check .
     - name: Running test suite
       run: |
         python -m pytest .
