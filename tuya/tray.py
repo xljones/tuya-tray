@@ -1,30 +1,31 @@
 import logging
 import os
 import pickle
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import tuyapy
 from PyQt6.QtCore import QCoreApplication
-from PyQt6.QtGui import QCursor, QIcon
+from PyQt6.QtGui import QAction, QCursor, QIcon
 from PyQt6.QtWidgets import QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
 from tuyapy.devices import base
 
 from tuya.config import Config
-from tuya.const import PICKLED_SESSION_FILEPATH, TEMPERATURE_UNIT
+from tuya.const import PICKLED_SESSION_FILEPATH, TEMPERATURE_UNIT, ExtraAbilities
 from tuya.devices import (
     TuyaClimateExtended,
     TuyaLightExtended,
     TuyaSceneExtended,
     TuyaSwitchExtended,
 )
+from tuya.exceptions import DeviceAbilityNotFound
 
 logger = logging.getLogger(__name__)
 
 
 class TuyaTray(QSystemTrayIcon):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.tuya_api: TuyaApi = TuyaApi()
         self.devices: List[Any] = []
@@ -43,7 +44,7 @@ class TuyaTray(QSystemTrayIcon):
         self._load_session()
         self._init_ui()
 
-    def _load_session(self, force_refresh: bool = False):
+    def _load_session(self, force_refresh: bool = False) -> None:
         config = Config()
 
         if os.path.exists(PICKLED_SESSION_FILEPATH) and not force_refresh:
@@ -101,7 +102,43 @@ class TuyaTray(QSystemTrayIcon):
         logger.info(f"found {len(self.scene_groups)} scene_groups")
         logger.info(f"found {len(self.climates)} climate controllers")
 
-    def _init_ui(self):
+    @staticmethod
+    def _add_device_to_menu(
+        root_menu: QMenu,
+        device: Union[TuyaClimateExtended, TuyaLightExtended, TuyaSwitchExtended],
+        device_name: str,
+        extra_abilities: List = [],
+    ) -> None:
+        device_menu = root_menu.addMenu(device_name)
+        device_on = device_menu.addAction("On")
+        device_on.triggered.connect(device.turn_on)
+        device_off = device_menu.addAction("Off")
+        device_off.triggered.connect(device.turn_off)
+
+        for extra_ability in extra_abilities:
+            match extra_ability:
+                case ExtraAbilities.CHANGE_COLOR:
+                    change_color = device_menu.addAction("Light Color")
+                    change_color.triggered.connect(device.change_colour)
+                case ExtraAbilities.CLIMATE_CONTROL:
+                    # show target and current temperatures of the climate controllers
+                    target_temp = device_menu.addAction(
+                        f"Target: {device.target_temperature()}{TEMPERATURE_UNIT}"
+                    )
+                    target_temp.setDisabled(True)
+                    current_temp = device_menu.addAction(
+                        f"Current: {device.current_temperature()}{TEMPERATURE_UNIT}"
+                    )
+                    current_temp.setDisabled(True)
+
+                    incr_temp = device_menu.addAction(f"+ 1{TEMPERATURE_UNIT}")
+                    incr_temp.triggered.connect(device.incr_temp)
+                    decr_temp = device_menu.addAction(f"- 1{TEMPERATURE_UNIT}")
+                    decr_temp.triggered.connect(device.decr_temp)
+                case _:
+                    raise DeviceAbilityNotFound(f"{extra_ability} is not implemented")
+
+    def _init_ui(self) -> None:
         for _, scene_group_devices in self.scene_groups.items():
             for scene_name, scene in scene_group_devices.items():
                 activate = self.menu.addAction(scene_name)
@@ -109,48 +146,31 @@ class TuyaTray(QSystemTrayIcon):
             self.menu.addSeparator()
 
         lights_menu = self.menu.addMenu("Lights")
-        for device_name, device in self.lights.items():
-            device_menu = lights_menu.addMenu(device_name)
-            device_on = device_menu.addAction("On")
-            device_on.triggered.connect(device.turn_on)
-            device_off = device_menu.addAction("Off")
-            device_off.triggered.connect(device.turn_off)
-            change_color = device_menu.addAction("Light Color")
-            change_color.triggered.connect(device.change_colour)
-
         switches_menu = self.menu.addMenu("Switches")
-        for device_name, device in self.switches.items():
-            device_menu = switches_menu.addMenu(device_name)
-            device_on = device_menu.addAction("On")
-            device_on.triggered.connect(device.turn_on)
-            device_off = device_menu.addAction("Off")
-            device_off.triggered.connect(device.turn_off)
-
         climate_menu = self.menu.addMenu("Climate Controllers")
+
+        for device_name, device in self.lights.items():
+            self._add_device_to_menu(
+                root_menu=lights_menu,
+                device=device,
+                device_name=device_name,
+                extra_abilities=[ExtraAbilities.CHANGE_COLOR],
+            )
+
+        for device_name, device in self.switches.items():
+            self._add_device_to_menu(
+                root_menu=switches_menu,
+                device=device,
+                device_name=device_name,
+            )
+
         for device_name, device in self.climates.items():
-            device_menu = climate_menu.addMenu(device_name)
-            device_on = device_menu.addAction("On")
-            device_on.triggered.connect(device.turn_on)
-            device_off = device_menu.addAction("Off")
-            device_off.triggered.connect(device.turn_off)
-
-            # show target and current temperatures of the climate controllers
-            target_temp = device_menu.addAction(
-                f"Target: {device.target_temperature()}{TEMPERATURE_UNIT}"
+            self._add_device_to_menu(
+                root_menu=climate_menu,
+                device=device,
+                device_name=device_name,
+                extra_abilities=[ExtraAbilities.CLIMATE_CONTROL],
             )
-            target_temp.setDisabled(True)
-            current_temp = device_menu.addAction(
-                f"Current: {device.current_temperature()}{TEMPERATURE_UNIT}"
-            )
-            current_temp.setDisabled(True)
-
-            incr_temp = device_menu.addAction(f"+ 1{TEMPERATURE_UNIT}")
-            incr_temp.triggered.connect(device.incr_temp)
-            decr_temp = device_menu.addAction(f"- 1{TEMPERATURE_UNIT}")
-            decr_temp.triggered.connect(device.decr_temp)
-
-            # disable controls if the device is offline
-            # device_menu.setDisabled(not device.state())
 
         self.menu.addSeparator()
         exit_action = self.menu.addAction("Exit")
@@ -159,13 +179,3 @@ class TuyaTray(QSystemTrayIcon):
 
         logger.info("showing ui")
         self.show()
-
-
-class TrayIcon(QSystemTrayIcon):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.activated.connect(self.show_menu_on_trigger())
-
-    def show_menu_on_trigger(self, reason):
-        if reason == QSystemTrayIcon.Trigger:
-            self.contextMenu().popup(QCursor.pos())

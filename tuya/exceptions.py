@@ -1,0 +1,2 @@
+class DeviceAbilityNotFound(Exception):
+    pass
