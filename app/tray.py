@@ -137,8 +137,8 @@ class TuyaTray(QSystemTrayIcon):
         for extra_ability in extra_abilities:
             match extra_ability:
                 case ExtraAbilities.CHANGE_COLOR:
-                    change_color = device_menu.addAction("Light Color")
-                    change_color.triggered.connect(  # type: ignore[attr-defined]
+                    cc = device_menu.addAction("Light Color")
+                    cc.triggered.connect(  # type: ignore[attr-defined]
                         device.change_colour,
                     )
                 case ExtraAbilities.CLIMATE_CONTROL:
