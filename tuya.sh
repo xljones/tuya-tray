@@ -46,7 +46,7 @@ elif [ "$1" = "--config" -o "$1" = "-c" ]; then
 elif [ "$1" = "--active" -o "$1" = "-a" ]; then
     echo "starting tuya-tray without disconnecting from process.."
     venv_activate
-    python -m app.tuya
+    python -m app
 elif [ "$1" = "--install" -o "$1" = "-i" ]; then
     venv_activate
 elif [ "$1" = "--test" -o "$1" = "-t" ]; then
@@ -65,7 +65,7 @@ elif [ "$1" = "--test" -o "$1" = "-t" ]; then
 elif [ "$1" = "" ]; then
     echo "starting tuya-tray with no hangup (nohup)..."
     venv_activate
-    nohup python -m tuya > .tuya.log &
+    nohup python -m app > .tuya.log &
 else
     echo "Invalid option"
 fi
