@@ -126,15 +126,21 @@ class TuyaTray(QSystemTrayIcon):
     ) -> None:
         device_menu = root_menu.addMenu(device_name)
         device_on = device_menu.addAction("On")
-        device_on.triggered.connect(device.turn_on)
+        device_on.triggered.connect(  # type: ignore[attr-defined]
+            device.turn_on,
+        )
         device_off = device_menu.addAction("Off")
-        device_off.triggered.connect(device.turn_off)
+        device_off.triggered.connect(  # type: ignore[attr-defined]
+            device.turn_off,
+        )
 
         for extra_ability in extra_abilities:
             match extra_ability:
                 case ExtraAbilities.CHANGE_COLOR:
                     change_color = device_menu.addAction("Light Color")
-                    change_color.triggered.connect(device.change_colour)
+                    change_color.triggered.connect(  # type: ignore[attr-defined]
+                        device.change_colour,
+                    )
                 case ExtraAbilities.CLIMATE_CONTROL:
                     # show target and current temperatures of the
                     # climate controllers
@@ -150,9 +156,13 @@ class TuyaTray(QSystemTrayIcon):
                     current_temp.setDisabled(True)
 
                     incr_temp = device_menu.addAction(f"+ 1{TEMPERATURE_UNIT}")
-                    incr_temp.triggered.connect(device.incr_temp)
+                    incr_temp.triggered.connect(  # type: ignore[attr-defined]
+                        device.incr_temp,
+                    )
                     decr_temp = device_menu.addAction(f"- 1{TEMPERATURE_UNIT}")
-                    decr_temp.triggered.connect(device.decr_temp)
+                    decr_temp.triggered.connect(  # type: ignore[attr-defined]
+                        device.decr_temp,
+                    )
                 case _:
                     raise DeviceAbilityNotFound(
                         f"{extra_ability} is not implemented"
@@ -194,7 +204,9 @@ class TuyaTray(QSystemTrayIcon):
 
         self.menu.addSeparator()
         exit_action = self.menu.addAction("Exit")
-        exit_action.triggered.connect(QCoreApplication.quit)
+        exit_action.triggered.connect(  # type: ignore[attr-defined]
+            QCoreApplication.quit,
+        )
         self.setContextMenu(self.menu)
 
         logger.info("showing ui")

@@ -6,7 +6,7 @@ from app.config import BadConfigException, Config
 
 class TestConfig:
     def test__load_config_from_file(self):
-        c = Config(config_filename="tests/fixtures/sample_config.json")
+        c = Config(config_filename="app/tests/fixtures/sample_config.json")
 
         assert c.username == "user@test.com"
         assert c.password == "my_password_123"
@@ -63,7 +63,10 @@ class TestConfig:
                     "country_code": "00",
                     "application": "toyota",
                 },
-                "application type 'toyota' is not valid. must be one of smart_life, tuya",
+                (
+                    "application type 'toyota' is not valid. "
+                    "must be one of smart_life, tuya"
+                ),
             ],
         ]
     )

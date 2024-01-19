@@ -2,10 +2,7 @@ import json
 from typing import List
 
 from app.const import CONFIG_FILEPATH
-
-
-class BadConfigException(Exception):
-    pass
+from app.exceptions import BadConfigException
 
 
 class Config:
