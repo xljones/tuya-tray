@@ -1,5 +1,23 @@
 [tool.black]
-line-length = 100
+line-length = 79
 
 [tool.isort]
 profile = "black"
+line_length = 79
+
+[tool.mypy]
+check_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "tuyapy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "parameterized.*"
+ignore_missing_imports = true
+
+[tool.coverage.run]
+data_file = "/tmp/.coverage"
+
+[tool.coverage.report]
+fail_under = 0
