@@ -9,11 +9,17 @@ class TuyaClimateExtended(climate.TuyaClimate):
     def incr_temp(self):
         current_temp = self.current_temperature()
         new_temp = current_temp + 1
-        logger.info(f"increasing {self.name()} target temp from {current_temp} to {new_temp}")
+        logger.info(
+            f"increasing {self.name()} target temp "
+            f"from {current_temp} to {new_temp}"
+        )
         self.set_temperature(new_temp)
 
     def decr_temp(self):
         current_temp = self.current_temperature()
         new_temp = current_temp - 1
-        logger.info(f"decreasing {self.name()} target temp from {current_temp} to {new_temp}")
+        logger.info(
+            f"decreasing {self.name()} target temp from "
+            f"{current_temp} to {new_temp}"
+        )
         self.set_temperature(new_temp)

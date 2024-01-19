@@ -1,11 +1,8 @@
 import json
 from typing import List
 
-from tuya.const import CONFIG_FILEPATH
-
-
-class BadConfigException(Exception):
-    pass
+from app.const import CONFIG_FILEPATH
+from app.exceptions import BadConfigException
 
 
 class Config:
@@ -14,7 +11,7 @@ class Config:
         self.password: str | None = None
         self.country_code: str | None = None
         self.application: str | None = None
-        self.scene_groups: List[str] | None = None
+        self.scene_group_names: List[str] = []
 
         if config_filename is not None:
             self._load_from_file(config_filename=config_filename)
@@ -27,7 +24,7 @@ class Config:
             self.password = config_data.get("password")
             self.country_code = config_data.get("country_code")
             self.application = config_data.get("application")
-            self.scene_groups = config_data.get("scene_groups")
+            self.scene_group_names = config_data.get("scene_group_names", [])
             config_file.close()
 
     def _verify(self) -> None:
@@ -42,7 +39,8 @@ class Config:
             issues.append("missing country code")
         if self.application not in applications_allowed:
             issues.append(
-                f"application type '{self.application}' is not valid. must be one of {', '.join(applications_allowed)}"
+                f"application type '{self.application}' is not valid. "
+                f"must be one of {', '.join(applications_allowed)}"
             )
 
         if issues:
