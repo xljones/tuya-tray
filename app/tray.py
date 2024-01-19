@@ -40,7 +40,7 @@ class TuyaTray(QSystemTrayIcon):
         self.scene_groups: Dict = {"other": {}}
         self.climates: Dict = dict()
 
-        self.setIcon(QIcon("img/icon-rounded.png"))
+        self.setIcon(QIcon("app/img/icon-rounded.png"))
         self.setToolTip("TuyaTray")
 
         self.menu = QMenu()
