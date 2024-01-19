@@ -10,19 +10,19 @@ from PyQt6.QtWidgets import QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
 from tuyapy.devices import base
 
-from tuya.config import Config
-from tuya.const import (
+from app.config import Config
+from app.const import (
     PICKLED_SESSION_FILEPATH,
     TEMPERATURE_UNIT,
     ExtraAbilities,
 )
-from tuya.devices import (
+from app.devices import (
     TuyaClimateExtended,
     TuyaLightExtended,
     TuyaSceneExtended,
     TuyaSwitchExtended,
 )
-from tuya.exceptions import DeviceAbilityNotFound
+from app.exceptions import DeviceAbilityNotFound
 
 logger = logging.getLogger(__name__)
 

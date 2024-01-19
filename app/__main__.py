@@ -3,7 +3,7 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from tuya.tray import TuyaTray
+from app.tuya.tray import TuyaTray
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 

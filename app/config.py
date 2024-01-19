@@ -1,7 +1,7 @@
 import json
 from typing import List
 
-from tuya.const import CONFIG_FILEPATH
+from app.const import CONFIG_FILEPATH
 
 
 class BadConfigException(Exception):

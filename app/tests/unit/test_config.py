@@ -1,7 +1,7 @@
 import pytest
 from parameterized import parameterized
 
-from tuya.config import BadConfigException, Config
+from app.config import BadConfigException, Config
 
 
 class TestConfig:
@@ -67,7 +67,9 @@ class TestConfig:
             ],
         ]
     )
-    def test_verify(self, test_name: str, test_config: dict, expected_exception_str: str):
+    def test_verify(
+        self, test_name: str, test_config: dict, expected_exception_str: str
+    ):
         c = Config(config_filename=None)
         c.username = test_config["username"]
         c.password = test_config["password"]
@@ -75,7 +77,10 @@ class TestConfig:
         c.application = test_config["application"]
 
         if expected_exception_str:
-            with pytest.raises(expected_exception=BadConfigException, match=expected_exception_str):
+            with pytest.raises(
+                expected_exception=BadConfigException,
+                match=expected_exception_str,
+            ):
                 c._verify()
         else:
             c._verify()
