@@ -42,7 +42,8 @@ class Config:
             issues.append("missing country code")
         if self.application not in applications_allowed:
             issues.append(
-                f"application type '{self.application}' is not valid. must be one of {', '.join(applications_allowed)}"
+                f"application type '{self.application}' is not valid. "
+                f"must be one of {', '.join(applications_allowed)}"
             )
 
         if issues:

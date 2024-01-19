@@ -5,13 +5,17 @@ from typing import Any, Dict, List, Union
 
 import tuyapy
 from PyQt6.QtCore import QCoreApplication
-from PyQt6.QtGui import QAction, QCursor, QIcon
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMenu, QSystemTrayIcon
 from tuyapy import TuyaApi
 from tuyapy.devices import base
 
 from tuya.config import Config
-from tuya.const import PICKLED_SESSION_FILEPATH, TEMPERATURE_UNIT, ExtraAbilities
+from tuya.const import (
+    PICKLED_SESSION_FILEPATH,
+    TEMPERATURE_UNIT,
+    ExtraAbilities,
+)
 from tuya.devices import (
     TuyaClimateExtended,
     TuyaLightExtended,
@@ -24,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class TuyaTray(QSystemTrayIcon):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.tuya_api: TuyaApi = TuyaApi()
@@ -48,12 +52,14 @@ class TuyaTray(QSystemTrayIcon):
         config = Config()
 
         if os.path.exists(PICKLED_SESSION_FILEPATH) and not force_refresh:
-            logger.info(f"loading previous tuya session in {PICKLED_SESSION_FILEPATH}")
+            logger.info(
+                f"loading previous tuya session in {PICKLED_SESSION_FILEPATH}"
+            )
             with open(PICKLED_SESSION_FILEPATH, "rb") as pickle_file:
                 tuyapy.tuyaapi.SESSION = pickle.load(pickle_file)
                 pickle_file.close()
         else:
-            logger.info(f"initializing new tuya api session")
+            logger.info("initializing new tuya api session")
             self.tuya_api.init(
                 username=config.username,
                 password=config.password,
@@ -61,7 +67,10 @@ class TuyaTray(QSystemTrayIcon):
                 bizType=config.application,
             )
 
-            logger.info(f"saving new tuya api session to disk {PICKLED_SESSION_FILEPATH}")
+            logger.info(
+                "saving new tuya api session "
+                f"to disk {PICKLED_SESSION_FILEPATH}"
+            )
             with open(PICKLED_SESSION_FILEPATH, "wb") as pickle_file:
                 pickle.dump(tuyapy.tuyaapi.SESSION, pickle_file)
                 pickle_file.close()
@@ -89,9 +98,13 @@ class TuyaTray(QSystemTrayIcon):
                     for scene_name in self.scene_groups.keys():
                         if scene_name in device.name().lower():
                             found_scene = True
-                            self.scene_groups[scene_name].update({device.name(): device_extended})
+                            self.scene_groups[scene_name].update(
+                                {device.name(): device_extended}
+                            )
                     if found_scene is False:
-                        self.scene_groups["other"].update({device.name(): device_extended})
+                        self.scene_groups["other"].update(
+                            {device.name(): device_extended}
+                        )
                 case "climate":
                     device_extended.__class__ = TuyaClimateExtended
                     self.climates.update({device.name(): device_extended})
@@ -105,7 +118,9 @@ class TuyaTray(QSystemTrayIcon):
     @staticmethod
     def _add_device_to_menu(
         root_menu: QMenu,
-        device: Union[TuyaClimateExtended, TuyaLightExtended, TuyaSwitchExtended],
+        device: Union[
+            TuyaClimateExtended, TuyaLightExtended, TuyaSwitchExtended
+        ],
         device_name: str,
         extra_abilities: List = [],
     ) -> None:
@@ -121,13 +136,16 @@ class TuyaTray(QSystemTrayIcon):
                     change_color = device_menu.addAction("Light Color")
                     change_color.triggered.connect(device.change_colour)
                 case ExtraAbilities.CLIMATE_CONTROL:
-                    # show target and current temperatures of the climate controllers
+                    # show target and current temperatures of the
+                    # climate controllers
                     target_temp = device_menu.addAction(
-                        f"Target: {device.target_temperature()}{TEMPERATURE_UNIT}"
+                        f"Target: {device.target_temperature()}"
+                        f"{TEMPERATURE_UNIT}"
                     )
                     target_temp.setDisabled(True)
                     current_temp = device_menu.addAction(
-                        f"Current: {device.current_temperature()}{TEMPERATURE_UNIT}"
+                        f"Current: {device.current_temperature()}"
+                        f"{TEMPERATURE_UNIT}"
                     )
                     current_temp.setDisabled(True)
 
@@ -136,7 +154,9 @@ class TuyaTray(QSystemTrayIcon):
                     decr_temp = device_menu.addAction(f"- 1{TEMPERATURE_UNIT}")
                     decr_temp.triggered.connect(device.decr_temp)
                 case _:
-                    raise DeviceAbilityNotFound(f"{extra_ability} is not implemented")
+                    raise DeviceAbilityNotFound(
+                        f"{extra_ability} is not implemented"
+                    )
 
     def _init_ui(self) -> None:
         for _, scene_group_devices in self.scene_groups.items():

@@ -1,4 +1,4 @@
-function show_help() 
+show_help() 
 {
     echo "_______________ ________.___.  _____          _____________________    _____ _____.___."
     echo "\__    ___/    |   \__  |   | /  _  \         \__    ___/\______   \  /  _  \\__  |   |"
@@ -19,7 +19,7 @@ function show_help()
     echo
 }
 
-function setup_config() 
+setup_config() 
 {
     if [ "$4" != "tuya" -o "$4" != "smart_life" ]; then
         echo "application needs to be one of [tuya|smart_life]"
@@ -29,14 +29,14 @@ function setup_config()
     fi
 }
 
-function venv_activate() 
+venv_activate()
 {
     if [ ! -d "venv" ]; then
         python -m venv venv
     fi
     source venv/bin/activate
-    python -m pip install --upgrade pip
-    python -m pip install -r requirements.txt
+    python -m pip install --upgrade pip $1
+    python -m pip install -r requirements.txt $1
 }
 
 if [ "$1" = "--help" -o "$1" = "-h" ]; then
@@ -51,12 +51,17 @@ elif [ "$1" = "--install" -o "$1" = "-i" ]; then
     venv_activate
 elif [ "$1" = "--test" -o "$1" = "-t" ]; then
     echo "running application tests"
-    venv_activate
-    python -m flake8 tuya
-    python -m mypy tuya
-    python -m black --check tuya
-    python -m isort --check tuya
-    python -m pytest ./
+    venv_activate "--quiet"
+    echo "=== FLAKE8 ==="
+    python -m flake8 .
+    echo "=== MYPY ==="
+    python -m mypy .
+    echo "=== BLACK ==="
+    python -m black --check .
+    echo "=== ISORT ==="
+    python -m isort --check .
+    echo "=== PYTEST ==="
+    python -m pytest .
 elif [ "$1" = "" ]; then
     echo "starting tuya-tray with no hangup (nohup)..."
     venv_activate
