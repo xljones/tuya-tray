@@ -1,15 +1,19 @@
 function show_help() 
 {
-    echo "Tuya Tray"
-    echo "Xander Jones (xljones.com)"
+    echo "_______________ ________.___.  _____          _____________________    _____ _____.___."
+    echo "\__    ___/    |   \__  |   | /  _  \         \__    ___/\______   \  /  _  \\__  |   |"
+    echo "  |    |  |    |   //   |   |/  /_\  \   ______ |    |    |       _/ /  /_\  \/   |   |"
+    echo "  |    |  |    |  / \____   /    |    \ /_____/ |    |    |    |   \/    |    \____   |"
+    echo "  |____|  |______/  / ______\____|__  /         |____|    |____|_  /\____|__  / ______|"
+    echo "                    \/              \/   X Jones (xljones.com)   \/         \/\/       "
     echo 
     echo "Syntax: ./tuya.sh [--help/-h|--config/-c]"
     echo "options:"
-    echo "--help|-h     Print this Help."
-    echo "--config|-c EMAIL PASSWORD COUNTRY_CODE APPLICATION   
-                Configure config.json with your details
-                APPLICATION will be one of smart_life|tuya"
-    echo "--active|-a   Run Tuya Tray and keep connected in the shell"
+    echo "    --help|-h     Print this Help."
+    echo "    --config|-c EMAIL PASSWORD COUNTRY_CODE APPLICATION   
+                    Configure config.json with your details
+                    APPLICATION will be one of smart_life|tuya"
+    echo "    --active|-a   Run Tuya Tray and keep connected in the shell"
     echo
     echo "Use no option to run Tuya Tray in the background"
     echo
@@ -31,7 +35,8 @@ function venv_activate()
         python -m venv venv
     fi
     source venv/bin/activate
-    python -m pip install -r requirements.txt --quiet
+    python -m pip install --upgrade pip
+    python -m pip install -r requirements.txt
 }
 
 if [ "$1" = "--help" -o "$1" = "-h" ]; then
@@ -42,6 +47,16 @@ elif [ "$1" = "--active" -o "$1" = "-a" ]; then
     echo "starting tuya-tray without disconnecting from process.."
     venv_activate
     python -m tuya
+elif [ "$1" = "--install" -o "$1" = "-i" ]; then
+    venv_activate
+elif [ "$1" = "--test" -o "$1" = "-t" ]; then
+    echo "running application tests"
+    venv_activate
+    python -m flake8 tuya
+    python -m mypy tuya
+    python -m black --check tuya
+    python -m isort --check tuya
+    python -m pytest ./
 elif [ "$1" = "" ]; then
     echo "starting tuya-tray with no hangup (nohup)..."
     venv_activate
