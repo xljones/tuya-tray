@@ -1,4 +1,4 @@
-PyQt6==6.4.0
+PyQt6==6.6.1
 tuyapy==0.1.4
 requests==2.31.0
 
