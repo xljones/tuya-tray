@@ -44,13 +44,12 @@ if [ "$1" = "--help" -o "$1" = "-h" ]; then
 elif [ "$1" = "--config" -o "$1" = "-c" ]; then
     setup_config $2 $3
 elif [ "$1" = "--active" -o "$1" = "-a" ]; then
-    echo "starting tuya-tray without disconnecting from process.."
-    venv_activate
+    echo "starting tuya-tray without disconnecting from process..."
+    venv_activate "--quiet"
     python -m app
 elif [ "$1" = "--install" -o "$1" = "-i" ]; then
     venv_activate
 elif [ "$1" = "--test" -o "$1" = "-t" ]; then
-    echo "running application tests"
     venv_activate "--quiet"
     echo "=== FLAKE8 ==="
     python -m flake8 ./app
@@ -68,7 +67,7 @@ elif [ "$1" = "--format" -o "$1" = "-f" ]; then
     python -m isort ./app
 elif [ "$1" = "" ]; then
     echo "starting tuya-tray with no hangup (nohup)..."
-    venv_activate
+    venv_activate "--quiet"
     nohup python -m app > .tuya.log &
 else
     echo "Invalid option"

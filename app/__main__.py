@@ -1,6 +1,7 @@
 import logging
 import sys
 
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 
 from app.tray import TuyaTray
@@ -10,8 +11,9 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
+    app.setWindowIcon(QIcon("app/img/icon-rounded.png"))
 
-    t = TuyaTray()
-    t.show()
+    tuya_tray = TuyaTray(parent=app)
+    tuya_tray.show()
 
     app.exec()
